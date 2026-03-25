@@ -5,7 +5,7 @@ import re
 def test_task_record_has_required_status_values():
     from backend.app.models import TASK_STATUSES, TaskRecord
 
-    task = TaskRecord(
+    task = TaskRecord.create(
         task_id="task_123",
         file_name="sample.docx",
         file_type="docx",

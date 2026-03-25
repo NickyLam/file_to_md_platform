@@ -9,6 +9,12 @@ INSERT INTO audit_logs (
     ip_address,
     device_id,
     file_hash,
+    task_status,
+    duration_ms,
+    failure_reason_code,
+    engine_version,
+    ocr_enabled,
+    model_enabled,
     created_at
 ) VALUES (
     :audit_id,
@@ -17,6 +23,12 @@ INSERT INTO audit_logs (
     :ip_address,
     :device_id,
     :file_hash,
+    :task_status,
+    :duration_ms,
+    :failure_reason_code,
+    :engine_version,
+    :ocr_enabled,
+    :model_enabled,
     :created_at
 )
 """.strip()
@@ -30,5 +42,11 @@ def audit_log_params(audit_log: AuditLogRecord) -> dict[str, object]:
         "ip_address": audit_log.ip_address,
         "device_id": audit_log.device_id,
         "file_hash": audit_log.file_hash,
+        "task_status": audit_log.task_status,
+        "duration_ms": audit_log.duration_ms,
+        "failure_reason_code": audit_log.failure_reason_code,
+        "engine_version": audit_log.engine_version,
+        "ocr_enabled": audit_log.ocr_enabled,
+        "model_enabled": audit_log.model_enabled,
         "created_at": audit_log.created_at,
     }

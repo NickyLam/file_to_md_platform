@@ -26,5 +26,11 @@ CREATE TABLE audit_logs (
     ip_address TEXT NOT NULL,
     device_id TEXT NOT NULL,
     file_hash TEXT NOT NULL,
+    task_status TEXT NOT NULL,
+    duration_ms BIGINT,
+    failure_reason_code TEXT,
+    engine_version TEXT,
+    ocr_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    model_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL
 );
