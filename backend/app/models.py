@@ -95,3 +95,7 @@ class AuditLogRecord:
     ocr_enabled: bool = False
     model_enabled: bool = False
     created_at: datetime = field(default_factory=utc_now)
+
+    def __post_init__(self) -> None:
+        if self.task_status not in TASK_STATUSES:
+            raise ValueError(f"unsupported task status: {self.task_status}")

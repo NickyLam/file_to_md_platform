@@ -35,13 +35,18 @@ def test_initial_migration_defines_tasks_and_audit_tables():
     assert "CREATE TABLE audit_logs" in sql
     assert "CONSTRAINT tasks_status_check CHECK" in sql
     assert "CONSTRAINT audit_logs_status_check CHECK" in sql
-    check_clause = re.search(r"CONSTRAINT tasks_status_check CHECK \((.*?)\)\s*;", sql, re.S)
-    assert check_clause is not None
-    allowed_statuses = set(re.findall(r"'([^']+)'", check_clause.group(1)))
-    assert allowed_statuses == {
+    task_check = re.search(r"CONSTRAINT tasks_status_check CHECK \((.*?)\)\s*,", sql, re.S)
+    audit_check = re.search(r"CONSTRAINT audit_logs_status_check CHECK \((.*?)\)\s*\)", sql, re.S)
+    assert task_check is not None
+    assert audit_check is not None
+    allowed_statuses = set(re.findall(r"'([^']+)'", task_check.group(1)))
+    audit_statuses = set(re.findall(r"'([^']+)'", audit_check.group(1)))
+    expected_statuses = {
         "pending",
         "running",
         "success",
         "failed",
         "success_with_warnings",
     }
+    assert allowed_statuses == expected_statuses
+    assert audit_statuses == expected_statuses
