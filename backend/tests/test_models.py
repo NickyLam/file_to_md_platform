@@ -9,7 +9,9 @@ def test_task_record_has_required_status_values():
         file_name="sample.docx",
         file_type="docx",
         file_hash="abc123",
+        file_size=123,
         status="pending",
+        access_token="token_123",
     )
 
     assert task.status in TASK_STATUSES
@@ -23,7 +25,7 @@ def test_task_record_has_required_status_values():
 
 
 def test_initial_migration_defines_tasks_and_audit_tables():
-    migration_path = Path("backend/migrations/001_init.sql")
+    migration_path = Path(__file__).resolve().parents[1] / "migrations" / "001_init.sql"
     sql = migration_path.read_text(encoding="utf-8")
 
     assert "CREATE TABLE tasks" in sql

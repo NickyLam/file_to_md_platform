@@ -1,8 +1,5 @@
-from pathlib import Path
-
-
-MIGRATIONS_DIR = Path(__file__).resolve().parents[1] / "migrations"
+from importlib.resources import files
 
 
 def load_migration(name: str) -> str:
-    return (MIGRATIONS_DIR / name).read_text(encoding="utf-8")
+    return (files("backend.migrations") / name).read_text(encoding="utf-8")

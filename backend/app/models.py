@@ -22,8 +22,8 @@ class TaskRecord:
     file_name: str
     file_type: str
     status: str
-    file_size: int = 0
-    access_token: str = ""
+    file_size: int
+    access_token: str
     created_at: datetime = field(default_factory=utc_now)
     updated_at: datetime = field(default_factory=utc_now)
 
