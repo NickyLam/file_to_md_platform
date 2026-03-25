@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 
 def test_task_record_has_required_status_values():
@@ -32,11 +33,11 @@ def test_initial_migration_defines_tasks_and_audit_tables():
     assert "CREATE TABLE tasks" in sql
     assert "CREATE TABLE audit_logs" in sql
     assert "CONSTRAINT tasks_status_check CHECK" in sql
-    for status in {
+    allowed_statuses = set(re.findall(r"'([^']+)'", sql))
+    assert allowed_statuses == {
         "pending",
         "running",
         "success",
         "failed",
         "success_with_warnings",
-    }:
-        assert status in sql
+    }

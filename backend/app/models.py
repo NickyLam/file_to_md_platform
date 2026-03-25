@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Optional
 
 
 TASK_STATUSES = {
@@ -26,13 +25,12 @@ class TaskRecord:
     file_size: int
     access_token: str
     created_at: datetime = field(default_factory=utc_now)
-    updated_at: Optional[datetime] = None
+    updated_at: datetime = field(init=False)
 
     def __post_init__(self) -> None:
         if self.status not in TASK_STATUSES:
             raise ValueError(f"unsupported task status: {self.status}")
-        if self.updated_at is None:
-            object.__setattr__(self, "updated_at", self.created_at)
+        object.__setattr__(self, "updated_at", self.created_at)
 
 
 @dataclass(frozen=True)
