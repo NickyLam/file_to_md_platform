@@ -15,6 +15,7 @@ def test_task_record_has_required_status_values():
     )
 
     assert task.status in TASK_STATUSES
+    assert task.created_at == task.updated_at
     assert TASK_STATUSES == {
         "pending",
         "running",
@@ -30,4 +31,12 @@ def test_initial_migration_defines_tasks_and_audit_tables():
 
     assert "CREATE TABLE tasks" in sql
     assert "CREATE TABLE audit_logs" in sql
-    assert "success_with_warnings" in sql
+    assert "CONSTRAINT tasks_status_check CHECK" in sql
+    for status in {
+        "pending",
+        "running",
+        "success",
+        "failed",
+        "success_with_warnings",
+    }:
+        assert status in sql
