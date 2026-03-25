@@ -32,7 +32,16 @@ CREATE TABLE audit_logs (
     engine_version TEXT,
     ocr_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     model_enabled BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL
+    created_at TIMESTAMPTZ NOT NULL,
+    CONSTRAINT audit_logs_status_check CHECK (
+        task_status IN (
+            'pending',
+            'running',
+            'success',
+            'failed',
+            'success_with_warnings'
+        )
+    )
 );
 
 CREATE INDEX idx_audit_logs_task_id ON audit_logs(task_id);
