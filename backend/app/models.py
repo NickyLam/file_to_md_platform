@@ -16,7 +16,7 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, init=False)
 class TaskRecord:
     task_id: str
     file_hash: str
@@ -25,12 +25,37 @@ class TaskRecord:
     status: str
     file_size: int
     access_token: str
-    created_at: datetime = field(default_factory=utc_now)
-    updated_at: datetime = field(default_factory=utc_now)
+    created_at: datetime
+    updated_at: datetime
 
-    def __post_init__(self) -> None:
-        if self.status not in TASK_STATUSES:
-            raise ValueError(f"unsupported task status: {self.status}")
+    def __init__(
+        self,
+        *,
+        task_id: str,
+        file_hash: str,
+        file_name: str,
+        file_type: str,
+        file_size: int,
+        status: str,
+        access_token: str,
+        created_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
+    ) -> None:
+        if status not in TASK_STATUSES:
+            raise ValueError(f"unsupported task status: {status}")
+
+        created_value = created_at or utc_now()
+        updated_value = created_value if updated_at is None else updated_at
+
+        object.__setattr__(self, "task_id", task_id)
+        object.__setattr__(self, "file_hash", file_hash)
+        object.__setattr__(self, "file_name", file_name)
+        object.__setattr__(self, "file_type", file_type)
+        object.__setattr__(self, "status", status)
+        object.__setattr__(self, "file_size", file_size)
+        object.__setattr__(self, "access_token", access_token)
+        object.__setattr__(self, "created_at", created_value)
+        object.__setattr__(self, "updated_at", updated_value)
 
     @classmethod
     def create(
@@ -44,7 +69,6 @@ class TaskRecord:
         status: str,
         access_token: str,
     ) -> "TaskRecord":
-        created_at = utc_now()
         return cls(
             task_id=task_id,
             file_hash=file_hash,
@@ -53,8 +77,6 @@ class TaskRecord:
             file_size=file_size,
             status=status,
             access_token=access_token,
-            created_at=created_at,
-            updated_at=created_at,
         )
 
 

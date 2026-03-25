@@ -34,3 +34,5 @@ CREATE TABLE audit_logs (
     model_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL
 );
+
+CREATE INDEX idx_audit_logs_task_id ON audit_logs(task_id);
