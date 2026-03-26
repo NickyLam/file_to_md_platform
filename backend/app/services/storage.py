@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 from typing import Union
 
 
@@ -17,7 +18,7 @@ class StorageService:
         return path
 
     def read_markdown(self, task_id: str) -> str:
-        path = self._task_dir(task_id) / "result.md"
+        path = self.base_dir / task_id / "result.md"
         return path.read_text(encoding="utf-8")
 
     def write_artifact(self, task_id: str, name: str, content: Union[bytes, str]) -> Path:
@@ -27,3 +28,8 @@ class StorageService:
         data = content.encode("utf-8") if isinstance(content, str) else content
         path.write_bytes(data)
         return path
+
+    def cleanup_task(self, task_id: str) -> None:
+        path = self.base_dir / task_id
+        if path.exists():
+            shutil.rmtree(path)

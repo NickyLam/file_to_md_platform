@@ -41,6 +41,7 @@ class ConversionWorker:
             for artifact_name, artifact_data in result.artifacts.items():
                 self.storage.write_artifact(task_id, artifact_name, artifact_data)
         except Exception:
+            self.storage.cleanup_task(task_id)
             self._set_status(running, "failed")
             raise
 
