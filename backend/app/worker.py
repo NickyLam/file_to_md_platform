@@ -13,16 +13,17 @@ from backend.app.services.storage import StorageService
 
 Converter = Callable[[Path], ConversionResult]
 
+CONVERTERS: dict[str, Converter] = {
+    "docx": convert_docx,
+    "pdf": convert_pdf,
+    "xlsx": convert_xlsx,
+}
+
 
 class ConversionWorker:
     def __init__(self, storage: StorageService) -> None:
         self.storage = storage
         self.task_snapshots: dict[str, dict[str, object]] = {}
-        self._converters: dict[str, Converter] = {
-            "docx": convert_docx,
-            "pdf": convert_pdf,
-            "xlsx": convert_xlsx,
-        }
 
     def process_task(self, task_id: str, source_path: Union[Path, str]) -> TaskRecord:
         task = get_task(task_id)
@@ -30,13 +31,16 @@ class ConversionWorker:
             raise KeyError(f"task not found: {task_id}")
 
         running = self._set_status(task, "running")
-        converter = self._converters.get(running.file_type.lower())
+        converter = CONVERTERS.get(running.file_type.lower())
         if converter is None:
             self._set_status(running, "failed")
             raise ValueError(f"unsupported file type: {running.file_type}")
 
         try:
             result = converter(Path(source_path))
+            if not result.markdown.strip():
+                self.storage.cleanup_task(task_id)
+                return self._set_status(running, "failed")
             self.storage.write_markdown(task_id, result.markdown)
             for artifact_name, artifact_data in result.artifacts.items():
                 self.storage.write_artifact(task_id, artifact_name, artifact_data)

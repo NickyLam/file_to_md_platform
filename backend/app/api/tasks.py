@@ -4,6 +4,8 @@ from secrets import token_urlsafe
 from typing import Optional
 from uuid import uuid4
 
+from fastapi import HTTPException, status
+
 from backend.app.models import TaskRecord
 
 
@@ -31,3 +33,14 @@ def get_task(task_id: str) -> Optional[TaskRecord]:
 
 def list_tasks() -> Mapping[str, TaskRecord]:
     return task_store
+
+
+def require_task_access(task_id: str, access_token: Optional[str]) -> TaskRecord:
+    if not access_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token required")
+
+    task = get_task(task_id)
+    if task is None or access_token != task.access_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid access token")
+
+    return task
