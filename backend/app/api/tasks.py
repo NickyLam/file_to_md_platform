@@ -14,6 +14,7 @@ from backend.app.models import TaskRecord, utc_now
 task_store: dict[str, TaskRecord] = {}
 TASK_STORE_TTL_SECONDS = int(os.getenv("TASK_STORE_TTL_SECONDS", "3600"))
 TASK_STORE_MAX_ITEMS = int(os.getenv("TASK_STORE_MAX_ITEMS", "2000"))
+ACCESS_TOKEN_TTL_SECONDS = int(os.getenv("ACCESS_TOKEN_TTL_SECONDS", "86400"))
 
 
 def _evict_tasks(now: datetime) -> None:
@@ -57,6 +58,10 @@ def list_tasks() -> Mapping[str, TaskRecord]:
     return task_store
 
 
+def access_token_expires_at(task: TaskRecord) -> datetime:
+    return task.created_at + timedelta(seconds=ACCESS_TOKEN_TTL_SECONDS)
+
+
 def require_task_access(task_id: str, access_token: Optional[str]) -> TaskRecord:
     if not access_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token required")
@@ -64,5 +69,7 @@ def require_task_access(task_id: str, access_token: Optional[str]) -> TaskRecord
     task = get_task(task_id)
     if task is None or access_token != task.access_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid access token")
+    if utc_now() >= access_token_expires_at(task):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token expired")
 
     return task

@@ -96,3 +96,31 @@ def test_upload_rejects_file_too_large(monkeypatch):
     assert response.status_code == 413
     assert response.json() == {"detail": "file too large: max 8 bytes"}
     assert task_store == {}
+
+
+def test_upload_rate_limit_returns_429(monkeypatch, tmp_path):
+    from backend.app.api.tasks import task_store
+    from backend.app.api import uploads
+    from backend.app.main import app
+
+    task_store.clear()
+    uploads._upload_rate_window.clear()
+    monkeypatch.setattr(uploads, "STORAGE_DIR", str(tmp_path / "storage"))
+    monkeypatch.setattr(uploads, "UPLOAD_RATE_LIMIT_MAX_REQUESTS", 1)
+    monkeypatch.setattr(uploads, "UPLOAD_RATE_LIMIT_WINDOW_SECONDS", 60)
+    client = TestClient(app)
+    payload = _docx_payload("rate-limited")
+
+    first = client.post(
+        "/api/upload",
+        files={"file": ("sample.docx", payload, "application/octet-stream")},
+    )
+    second = client.post(
+        "/api/upload",
+        files={"file": ("sample.docx", payload, "application/octet-stream")},
+    )
+
+    assert first.status_code == 201
+    assert second.status_code == 429
+    assert second.json() == {"detail": "upload rate limit exceeded"}
+    uploads._upload_rate_window.clear()

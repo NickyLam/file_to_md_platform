@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 from zipfile import ZipFile
 
 from fastapi.testclient import TestClient
@@ -34,6 +35,22 @@ def test_status_rejects_invalid_access_token():
     response = client.get(f"/api/tasks/{task.task_id}", headers={"X-Access-Token": "wrong"})
 
     assert response.status_code == 401
+
+
+def test_status_rejects_expired_access_token(monkeypatch):
+    from backend.app.api import tasks
+    from backend.app.main import app
+
+    tasks.task_store.clear()
+    task = tasks.create_task(file_name="sample.docx", file_bytes=b"example")
+    monkeypatch.setattr(tasks, "ACCESS_TOKEN_TTL_SECONDS", 1)
+    monkeypatch.setattr(tasks, "utc_now", lambda: task.created_at + timedelta(seconds=2))
+    client = TestClient(app)
+
+    response = client.get(f"/api/tasks/{task.task_id}", headers={"X-Access-Token": task.access_token})
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "access token expired"}
 
 
 def test_status_returns_task_state_with_valid_access_token():

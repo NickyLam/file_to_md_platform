@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Header
 
-from backend.app.api.tasks import require_task_access
+from backend.app.api.tasks import access_token_expires_at, require_task_access
 
 
 router = APIRouter()
@@ -19,6 +19,7 @@ def get_task_status(task_id: str, access_token: Optional[str] = Header(default=N
         "file_size": task.file_size,
         "created_at": task.created_at.isoformat(),
         "updated_at": task.updated_at.isoformat(),
+        "access_token_expires_at": access_token_expires_at(task).isoformat(),
     }
     markdown = task.markdown_preview
     if markdown is not None:
