@@ -44,6 +44,8 @@ Services exposed by default:
 - PostgreSQL: `localhost:5432`
 - Redis: `localhost:6379`
 
+Note: in the current MVP, conversion is triggered as an API background task after upload.
+
 ## Audit and retention
 
 - Audit records keep task metadata, IP, device ID, and processing status.

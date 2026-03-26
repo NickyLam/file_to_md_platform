@@ -26,10 +26,8 @@ def test_status_requires_access_token():
 def test_status_rejects_invalid_access_token():
     from backend.app.api.tasks import create_task, task_store
     from backend.app.main import app
-    from backend.app.worker import task_markdowns
 
     task_store.clear()
-    task_markdowns.clear()
     task = create_task(file_name="sample.docx", file_bytes=b"example")
     client = TestClient(app)
 
@@ -41,10 +39,8 @@ def test_status_rejects_invalid_access_token():
 def test_status_returns_task_state_with_valid_access_token():
     from backend.app.api.tasks import create_task, task_store
     from backend.app.main import app
-    from backend.app.worker import task_markdowns
 
     task_store.clear()
-    task_markdowns.clear()
     task = create_task(file_name="sample.docx", file_bytes=b"example")
     client = TestClient(app)
 
@@ -59,10 +55,9 @@ def test_status_returns_markdown_after_successful_conversion(tmp_path: Path):
     from backend.app.api.tasks import create_task, task_store
     from backend.app.main import app
     from backend.app.services.storage import StorageService
-    from backend.app.worker import process_task, task_markdowns
+    from backend.app.worker import process_task
 
     task_store.clear()
-    task_markdowns.clear()
     source = tmp_path / "sample.docx"
     _write_docx(source, "Converted body")
     task = create_task(file_name="sample.docx", file_bytes=source.read_bytes())
@@ -80,10 +75,9 @@ def test_worker_marks_empty_markdown_as_failed(tmp_path: Path):
     from backend.app.api.tasks import create_task, task_store
     from backend.app.converters.base import ConversionResult
     from backend.app.services.storage import StorageService
-    from backend.app.worker import CONVERTERS, process_task, task_markdowns
+    from backend.app.worker import CONVERTERS, process_task
 
     task_store.clear()
-    task_markdowns.clear()
     source = tmp_path / "sample.docx"
     _write_docx(source, "ignored")
     task = create_task(file_name="sample.docx", file_bytes=source.read_bytes())

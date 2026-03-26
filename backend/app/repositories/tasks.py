@@ -35,6 +35,7 @@ def task_params(task: TaskRecord) -> dict[str, object]:
         "file_type": task.file_type,
         "status": task.status,
         "access_token": task.access_token,
+        "markdown_preview": task.markdown_preview,
         "created_at": task.created_at,
         "updated_at": task.updated_at,
     }

@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Callable, Union
+import os
+from typing import Callable, Optional, Union
 
 from backend.app.api.tasks import get_task, task_store
 from backend.app.converters.base import ConversionResult
@@ -18,8 +19,7 @@ CONVERTERS: dict[str, Converter] = {
     "pdf": convert_pdf,
     "xlsx": convert_xlsx,
 }
-
-task_markdowns: dict[str, str] = {}
+MARKDOWN_PREVIEW_MAX_CHARS = int(os.getenv("MARKDOWN_PREVIEW_MAX_CHARS", "20000"))
 
 
 class ConversionWorker:
@@ -42,22 +42,20 @@ class ConversionWorker:
             result = converter(Path(source_path))
             if not result.markdown.strip():
                 self.storage.cleanup_task(task_id)
-                task_markdowns.pop(task_id, None)
-                return self._set_status(running, "failed")
+                return self._set_status(running, "failed", markdown_preview=None)
             self.storage.write_markdown(task_id, result.markdown)
-            task_markdowns[task_id] = result.markdown
+            markdown_preview = result.markdown[:MARKDOWN_PREVIEW_MAX_CHARS]
             for artifact_name, artifact_data in result.artifacts.items():
                 self.storage.write_artifact(task_id, artifact_name, artifact_data)
         except Exception:
             self.storage.cleanup_task(task_id)
-            task_markdowns.pop(task_id, None)
-            self._set_status(running, "failed")
+            self._set_status(running, "failed", markdown_preview=None)
             raise
 
         final_status = "success_with_warnings" if result.warnings else "success"
-        return self._set_status(running, final_status)
+        return self._set_status(running, final_status, markdown_preview=markdown_preview)
 
-    def _set_status(self, task: TaskRecord, status: str) -> TaskRecord:
+    def _set_status(self, task: TaskRecord, status: str, markdown_preview: Optional[str] = None) -> TaskRecord:
         updated = TaskRecord(
             task_id=task.task_id,
             file_hash=task.file_hash,
@@ -66,6 +64,7 @@ class ConversionWorker:
             file_size=task.file_size,
             status=status,
             access_token=task.access_token,
+            markdown_preview=markdown_preview,
             created_at=task.created_at,
             updated_at=utc_now(),
         )

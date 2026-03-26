@@ -18,6 +18,7 @@ class TaskRecord:
     status: str
     file_size: int
     access_token: str
+    markdown_preview: Optional[str]
     created_at: datetime
     updated_at: datetime
 
@@ -31,6 +32,7 @@ class TaskRecord:
         file_size: int,
         status: str,
         access_token: str,
+        markdown_preview: Optional[str] = None,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
     ) -> None:
@@ -47,6 +49,7 @@ class TaskRecord:
         object.__setattr__(self, "status", status)
         object.__setattr__(self, "file_size", file_size)
         object.__setattr__(self, "access_token", access_token)
+        object.__setattr__(self, "markdown_preview", markdown_preview)
         object.__setattr__(self, "created_at", created_value)
         object.__setattr__(self, "updated_at", updated_value)
 
@@ -61,6 +64,7 @@ class TaskRecord:
         file_size: int,
         status: str,
         access_token: str,
+        markdown_preview: Optional[str] = None,
     ) -> "TaskRecord":
         return cls(
             task_id=task_id,
@@ -70,6 +74,7 @@ class TaskRecord:
             file_size=file_size,
             status=status,
             access_token=access_token,
+            markdown_preview=markdown_preview,
         )
 
 
