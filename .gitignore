@@ -4,6 +4,7 @@ frontend/node_modules/
 frontend/dist/
 frontend/playwright-report/
 frontend/test-results/
+*.egg-info/
 __pycache__/
 .pytest_cache/
 *.pyc

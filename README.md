@@ -29,6 +29,21 @@ uvicorn backend.app.main:app --reload
 
 The root endpoint returns a simple health payload at `GET /`.
 
+## Docker Compose
+
+Start the full stack:
+
+```bash
+docker compose up --build
+```
+
+Services exposed by default:
+
+- Frontend: `http://localhost:4173`
+- API: `http://localhost:8000`
+- PostgreSQL: `localhost:5432`
+- Redis: `localhost:6379`
+
 ## Audit and retention
 
 - Audit records keep task metadata, IP, device ID, and processing status.

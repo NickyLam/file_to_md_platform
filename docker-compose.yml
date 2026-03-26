@@ -4,11 +4,64 @@ services:
     working_dir: /app
     command: >
       sh -c "pip install -e '.[dev]' &&
-      uvicorn backend.app.main:app --host $${APP_HOST:-0.0.0.0} --port $${APP_PORT:-8000}"
+      uvicorn backend.app.main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     environment:
-      APP_HOST: ${APP_HOST:-0.0.0.0}
-      APP_PORT: ${APP_PORT:-8000}
+      PYTHONUNBUFFERED: "1"
+      DATABASE_URL: postgresql://filetomd:filetomd@postgres:5432/filetomd
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_DIR: /app/storage
     volumes:
       - .:/app
+      - api-storage:/app/storage
+    depends_on:
+      - postgres
+      - redis
+  worker:
+    image: python:3.13-slim
+    working_dir: /app
+    command: >
+      sh -c "pip install -e '.[dev]' &&
+      python -c 'import time; time.sleep(1000000)'"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      DATABASE_URL: postgresql://filetomd:filetomd@postgres:5432/filetomd
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_DIR: /app/storage
+    volumes:
+      - .:/app
+      - api-storage:/app/storage
+    depends_on:
+      - api
+      - postgres
+      - redis
+  frontend:
+    image: node:22-alpine
+    working_dir: /app/frontend
+    command: >
+      sh -c "npm ci &&
+      npm run dev -- --host 0.0.0.0 --port 4173"
+    ports:
+      - "4173:4173"
+    volumes:
+      - .:/app
+    depends_on:
+      - api
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: filetomd
+      POSTGRES_USER: filetomd
+      POSTGRES_PASSWORD: filetomd
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+
+volumes:
+  api-storage:
+  postgres-data:
+  redis-data:
