@@ -28,3 +28,9 @@ uvicorn backend.app.main:app --reload
 ```
 
 The root endpoint returns a simple health payload at `GET /`.
+
+## Audit and retention
+
+- Audit records keep task metadata, IP, device ID, and processing status.
+- Full Markdown output is not written into audit logs.
+- Conversion outputs and temporary artifacts can be cleaned with the retention helpers in `backend/app/services/retention.py`.
