@@ -3,7 +3,8 @@ import re
 
 def test_task_record_has_required_status_values():
     from backend.app.db import load_migration
-    from backend.app.models import TASK_STATUSES, TaskRecord
+    from backend.app.models import TaskRecord
+    from backend.app.statuses import TASK_STATUSES
 
     task = TaskRecord(
         task_id="task_123",
@@ -35,8 +36,16 @@ def test_initial_migration_defines_tasks_and_audit_tables():
     assert "CREATE TABLE audit_logs" in sql
     assert "CONSTRAINT tasks_status_check CHECK" in sql
     assert "CONSTRAINT audit_logs_status_check CHECK" in sql
-    task_check = re.search(r"CONSTRAINT tasks_status_check CHECK \((.*?)\)\s*,", sql, re.S)
-    audit_check = re.search(r"CONSTRAINT audit_logs_status_check CHECK \((.*?)\)\s*\)", sql, re.S)
+    task_check = re.search(
+        r"CONSTRAINT tasks_status_check CHECK \(\s*status IN \((.*?)\)\s*\)\s*",
+        sql,
+        re.S,
+    )
+    audit_check = re.search(
+        r"CONSTRAINT audit_logs_status_check CHECK \(\s*task_status IN \((.*?)\)\s*\)\s*",
+        sql,
+        re.S,
+    )
     assert task_check is not None
     assert audit_check is not None
     allowed_statuses = set(re.findall(r"'([^']+)'", task_check.group(1)))

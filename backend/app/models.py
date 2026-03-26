@@ -2,14 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
 
-
-TASK_STATUSES = {
-    "pending",
-    "running",
-    "success",
-    "failed",
-    "success_with_warnings",
-}
+from backend.app.statuses import TASK_STATUSES
 
 
 def utc_now() -> datetime:
