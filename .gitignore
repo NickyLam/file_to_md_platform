@@ -1,5 +1,9 @@
 .worktrees/
 worktrees/
+frontend/node_modules/
+frontend/dist/
+frontend/playwright-report/
+frontend/test-results/
 __pycache__/
 .pytest_cache/
 *.pyc
