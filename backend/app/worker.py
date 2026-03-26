@@ -19,6 +19,8 @@ CONVERTERS: dict[str, Converter] = {
     "xlsx": convert_xlsx,
 }
 
+task_markdowns: dict[str, str] = {}
+
 
 class ConversionWorker:
     def __init__(self, storage: StorageService) -> None:
@@ -40,12 +42,15 @@ class ConversionWorker:
             result = converter(Path(source_path))
             if not result.markdown.strip():
                 self.storage.cleanup_task(task_id)
+                task_markdowns.pop(task_id, None)
                 return self._set_status(running, "failed")
             self.storage.write_markdown(task_id, result.markdown)
+            task_markdowns[task_id] = result.markdown
             for artifact_name, artifact_data in result.artifacts.items():
                 self.storage.write_artifact(task_id, artifact_name, artifact_data)
         except Exception:
             self.storage.cleanup_task(task_id)
+            task_markdowns.pop(task_id, None)
             self._set_status(running, "failed")
             raise
 
